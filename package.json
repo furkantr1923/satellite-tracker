@@ -1,0 +1,40 @@
+{
+  "name": "satellite-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SATELLITE TRACKER — CelesTrak verisiyle 3D Dünya üzerinde uydu takibi (Windows + Android)",
+  "author": "Furkan",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types \"tests/**/*.test.ts\"",
+    "test:e2e": "node e2e/smoke.mjs",
+    "textures": "node scripts/fetch-textures.mjs",
+    "icons": "python3 scripts/make-icons.py",
+    "tauri": "tauri",
+    "build:windows": "tauri build",
+    "android:init": "cap add android && node scripts/android-postsetup.mjs",
+    "build:android": "vite build && cap sync android"
+  },
+  "dependencies": {
+    "satellite.js": "6.0.1",
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "6.2.0",
+    "@capacitor/cli": "6.2.0",
+    "@capacitor/core": "6.2.0",
+    "@tauri-apps/cli": "^2.1.0",
+    "@types/three": "0.170.0",
+    "playwright": "1.49.0",
+    "typescript": "5.6.3",
+    "vite": "5.4.11"
+  }
+}

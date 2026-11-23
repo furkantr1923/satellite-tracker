@@ -1,0 +1,14 @@
+{
+  "appId": "com.furkan.satellitetracker",
+  "appName": "Satellite Tracker",
+  "webDir": "dist",
+  "android": {
+    "backgroundColor": "#02060F",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

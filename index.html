@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0B1D3A" />
+    <meta name="description" content="SATELLITE TRACKER — CelesTrak verisiyle 3D Dünya üzerinde uydu takibi" />
+    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <title>SATELLITE TRACKER</title>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="emblem" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="30" fill="#0B1D3A" stroke="#fff" stroke-width="2" />
+          <circle cx="32" cy="32" r="16" fill="none" stroke="#fff" stroke-width="1.6" />
+          <ellipse cx="32" cy="32" rx="7" ry="16" fill="none" stroke="#fff" stroke-width="1.2" opacity=".8" />
+          <path d="M16 32h32" stroke="#fff" stroke-width="1.2" opacity=".8" />
+          <ellipse cx="32" cy="32" rx="27" ry="9" fill="none" stroke="#FC3D21" stroke-width="2.6" transform="rotate(-28 32 32)" />
+          <circle cx="54.5" cy="20.5" r="3.4" fill="#fff" />
+        </symbol>
+        <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" /></symbol>
+        <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" /><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+        <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" /><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+        <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" stroke="currentColor" stroke-width="2" fill="none" /><circle cx="12" cy="12" r="2" fill="currentColor" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+        <symbol id="i-follow" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" /><circle cx="12" cy="12" r="3" fill="currentColor" /><path d="M12 17v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+      </defs>
+    </svg>
+
+    <div id="splash" class="splash" role="status" aria-live="polite">
+      <div class="splash-inner">
+        <svg class="splash-emblem"><use href="#emblem" /></svg>
+        <h1 class="splash-title">SATELLITE TRACKER</h1>
+        <div class="splash-sub">UYDU TAKİP SİSTEMİ</div>
+        <div class="splash-bar"><span></span></div>
+        <div class="splash-step" id="splash-step">Başlatılıyor…</div>
+      </div>
+      <div class="splash-foot">Furkan tarafından geliştirildi</div>
+    </div>
+
+    <div id="app" class="app">
+      <header class="topbar">
+        <button class="icon-btn" id="btn-list" title="Uydu listesi (L)" aria-label="Uydu listesi">
+          <svg><use href="#i-menu" /></svg>
+        </button>
+        <div class="brand">
+          <svg class="brand-emblem"><use href="#emblem" /></svg>
+          <div class="brand-text">
+            <div class="brand-title">SATELLITE TRACKER</div>
+            <div class="brand-sub">UYDU TAKİP SİSTEMİ</div>
+          </div>
+        </div>
+        <div class="status" id="status" data-state="loading">
+          <span class="status-dot"></span>
+          <span class="status-text" id="status-text">Başlatılıyor…</span>
+          <button class="status-retry" id="btn-retry" hidden>Tekrar dene</button>
+        </div>
+        <div class="topbar-right">
+          <div class="clock" id="clock">--:--:-- UTC</div>
+          <button class="icon-btn" id="btn-rotate" title="Otomatik dönüş" aria-label="Otomatik dönüş" aria-pressed="true">
+            <svg><use href="#i-rotate" /></svg>
+          </button>
+          <button class="icon-btn" id="btn-about" title="Hakkında" aria-label="Hakkında">
+            <svg><use href="#i-info" /></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="stage">
+        <div id="globe" class="globe"></div>
+        <div id="labels" class="labels" aria-hidden="true"></div>
+        <div id="globe-error" class="globe-error" hidden></div>
+
+        <aside id="panel-list" class="panel panel-list" aria-label="Uydu listesi">
+          <div class="sheet-handle" id="sheet-handle" role="button" aria-label="Listeyi aç/kapat"><span></span></div>
+          <div class="panel-head">
+            <label class="search">
+              <svg><use href="#i-search" /></svg>
+              <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="Uydu adı, ülke veya NORAD no…" />
+            </label>
+            <div class="chips" id="chips"></div>
+            <button class="link-btn" id="btn-advanced" aria-expanded="false">Gelişmiş filtreler</button>
+            <div class="advanced" id="advanced" hidden>
+              <div class="field">
+                <span class="field-label">Ülke / sahip</span>
+                <select id="owner-select"><option value="">Tümü</option></select>
+              </div>
+              <div class="field">
+                <span class="field-label">Yörünge sınıfı</span>
+                <div class="chips small" id="orbit-chips"></div>
+              </div>
+              <button class="link-btn" id="btn-reset">Filtreleri sıfırla</button>
+            </div>
+            <div class="result-count" id="result-count">—</div>
+          </div>
+          <div class="list" id="list" role="listbox" aria-label="Uydular"></div>
+        </aside>
+
+        <aside id="panel-info" class="panel panel-info" aria-label="Uydu bilgileri" hidden>
+          <div class="info-head">
+            <span class="cat-chip" id="info-cat"></span>
+            <button class="icon-btn small" id="btn-close-info" aria-label="Kapat"><svg><use href="#i-close" /></svg></button>
+          </div>
+          <h2 class="info-name" id="info-name"></h2>
+          <div class="info-ids" id="info-ids"></div>
+          <dl class="info-grid" id="info-grid"></dl>
+          <p class="info-note">
+            Konum, hız ve yükseklik CelesTrak yörünge elemanlarından <b>SGP4</b> ile <b>hesaplanmıştır</b>; kaynağın
+            doğrudan yayınladığı canlı konum değildir.
+          </p>
+          <div class="info-actions">
+            <button class="btn" id="btn-focus"><svg><use href="#i-target" /></svg>Odakla</button>
+            <button class="btn" id="btn-follow" aria-pressed="false"><svg><use href="#i-follow" /></svg>Takip et</button>
+          </div>
+        </aside>
+
+        <div class="credit">Developed by Furkan · Veri: CelesTrak · Görüntü: NASA</div>
+      </main>
+
+      <dialog id="about" class="about">
+        <div class="about-head">
+          <svg class="brand-emblem"><use href="#emblem" /></svg>
+          <div>
+            <div class="brand-title">SATELLITE TRACKER</div>
+            <div class="about-ver" id="about-ver"></div>
+          </div>
+          <button class="icon-btn small" id="btn-close-about" aria-label="Kapat"><svg><use href="#i-close" /></svg></button>
+        </div>
+        <p><b>Furkan tarafından geliştirildi.</b></p>
+        <h3>Veri doğruluğu</h3>
+        <p>
+          Uydu konumları hiçbir ücretsiz kaynakta doğrudan yayınlanmaz. CelesTrak, ABD Uzay Kuvvetleri kaynaklı
+          <b>yörünge elemanlarını (GP/OMM)</b> sağlar; bu uygulama konumu bu elemanlardan endüstri standardı
+          <b>SGP4/SDP4</b> modeliyle hesaplar ve bunu her yerde açıkça belirtir. Bağlantı yokken konumlar son çevrimiçi
+          anda dondurulur; yapay hareket üretilmez. Bilinmeyen bilgiler “Veri mevcut değil” olarak gösterilir.
+        </p>
+        <h3>Kaynaklar ve lisanslar</h3>
+        <ul>
+          <li>Yörünge elemanları ve SATCAT: CelesTrak (celestrak.org)</li>
+          <li>Yedek kaynak: AMSAT amatör uydu TLE listesi</li>
+          <li>Dünya görüntüleri: NASA Visible Earth (Blue Marble, City Lights)</li>
+          <li>Yazılım: Three.js (MIT), satellite.js (MIT), Tauri (MIT/Apache-2.0), Capacitor (MIT)</li>
+        </ul>
+        <h3>Kısayollar</h3>
+        <p class="kbd-line"><kbd>/</kbd> ara · <kbd>L</kbd> liste · <kbd>F</kbd> takip · <kbd>Esc</kbd> seçimi kaldır</p>
+        <h3>Sistem</h3>
+        <p id="about-sys"></p>
+      </dialog>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

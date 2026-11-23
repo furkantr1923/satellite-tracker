@@ -1,0 +1,140 @@
+SATELLITE TRACKER — "Bu projeyi nasıl yaptın?" sorusuna cevap notları
+Hazırlayan: Furkan
+====================================================================
+
+1) KISA ÖZET (30 saniyelik anlatım)
+----------------------------------
+"SATELLITE TRACKER, Dünya'nın yörüngesindeki 16 binden fazla aktif uyduyu
+3D bir Dünya üzerinde gösteren bir uygulama. Windows ve Android'de çalışıyor
+ve iki platform aynı TypeScript kodunu kullanıyor. Yörünge verisini
+CelesTrak'tan alıyorum. Uyduların konumunu, sektör standardı olan SGP4
+modeliyle kendim hesaplıyorum ve arayüzde bunun hesaplanmış bir değer
+olduğunu açıkça yazıyorum. 3D tarafında Three.js ve kendi yazdığım GLSL
+shader'lar var. Gece-gündüz sınırı gerçek zamanlı. Windows sürümü Tauri,
+Android sürümü Capacitor ile paketleniyor. Derleme ve testler GitHub
+Actions'ta otomatik çalışıyor."
+
+
+2) "NEDEN BU TEKNOLOJİLER?" SORUSUNA
+------------------------------------
+- TypeScript + Vite: Windows ve Android'de aynı kodu kullanmak için web
+  çekirdeği seçtim. Kodun yaklaşık %95'i ortak.
+- Three.js: 3D grafikte en olgun kütüphane. 16 bin uyduyu tek bir GPU
+  çizim çağrısıyla (Points + özel shader) çiziyorum, bu yüzden FPS
+  düşmüyor.
+- satellite.js: SGP4/SDP4'ün JavaScript sürümü. CelesTrak, resmî USSF
+  çıktısıyla karşılaştırarak doğruladığı bir kütüphane.
+- Tauri (Windows): Electron yerine Tauri seçtim. Kurulum dosyası çok daha
+  küçük ve bellek kullanımı düşük. Arka tarafı Rust.
+- Capacitor (Android): Aynı web paketini Android WebView'de çalıştırıyor.
+- GitHub Actions: EXE ve APK'yı temiz makinelerde, tekrarlanabilir
+  şekilde üretiyor. Bir etiket atınca Release otomatik oluşuyor.
+
+
+3) EN ZOR KISIM: VERİ DOĞRULUĞU
+-------------------------------
+Başta "yalnızca kaynağın verdiği konumu göster" diye bir kuralım vardı.
+Araştırınca şunu gördüm: CelesTrak, Space-Track ve N2YO dahil hiçbir
+ücretsiz kaynak binlerce uydu için doğrudan konum yayınlamıyor. Hepsi
+yörünge elemanı (TLE/OMM) veriyor, konumu da herkes SGP4 ile hesaplıyor.
+
+Bu yüzden şöyle bir çözüm uyguladım:
+- Kaynaktan gelen bilgiler (ad, NORAD no, eleman tarihi, ülke) "CELESTRAK"
+  ya da "SATCAT" etiketiyle gösteriliyor.
+- Hesaplanan bilgiler (konum, hız, yükseklik) "HESAPLANAN" etiketiyle
+  gösteriliyor ve bilgi kartında açıkça yazıyor.
+- Bilinmeyen bir bilgi asla uydurulmuyor, yerine "Veri mevcut değil"
+  yazıyor.
+- İnternet kesilince konumlar donuyor ve yapay hareket üretilmiyor.
+
+Bir de önemli bir ayrıntı var: 2026 ortasında 5 haneli uydu katalog
+numaraları tükendi. Yeni uydular TLE biçiminde yayınlanamıyor. Bu yüzden
+eski TLE yerine CelesTrak'ın önerdiği CSV (OMM) biçimini kullandım. Bu
+sayede 6 haneli numaralı yeni uydular da destekleniyor.
+
+
+4) API KURALLARINA SAYGI
+-----------------------
+CelesTrak aşırı sorgu yapan IP'leri engelliyor. Bu yüzden:
+- Uygulama her 30 saniyede durumu kontrol ediyor ama istek atmıyor.
+- Yörünge verisini en fazla 2 saatte bir indiriyor; CelesTrak zaten
+  2 saatte bir güncelliyor.
+- Ülke ve kategori verisini haftada bir indiriyor.
+- Sunucu 200 dışında bir yanıt verirse otomatik sorguyu durduruyor ve
+  kullanıcıya gösteriyor. CelesTrak'ın kullanım politikası bunu istiyor.
+- Bağlantı hatasında 30 sn → 1 dk → 2 dk … şeklinde artan aralıklarla
+  yeniden deniyor.
+
+
+5) PERFORMANS NASIL SAĞLANDI?
+-----------------------------
+- SGP4 hesabı ayrı bir Web Worker'da yapılıyor, arayüz hiç donmuyor.
+- Hesaplanan diziler kopyalanmadan aktarılıyor (Transferable).
+- Hesap saniyede 1 kez yapılıyor, ara karelerde GPU konumu hız vektörüyle
+  ilerletiyor. Böylece 120 Hz ekranda akıcı görünüyor.
+- Liste sanal kaydırma kullanıyor; 16 bin satırdan yalnızca ekranda
+  görünen ~20 tanesi çiziliyor.
+- FPS 28'in altına düşerse grafik kalitesi otomatik olarak azalıyor.
+- Windows, Android ve "düşük" olmak üzere üç ayrı performans profili var.
+
+
+6) 3D DÜNYA NASIL ÇALIŞIYOR?
+----------------------------
+- Sahne ataletsel çerçevede kurulu. Dünya, Greenwich yıldız zamanına
+  (GMST) göre gerçek hızında dönüyor. Bu yüzden yörüngeler doğru biçimde
+  kapalı elips olarak görünüyor.
+- Güneşin yönü astronomik formülle hesaplanıyor. Gece-gündüz sınırı ve
+  şehir ışıkları shader içinde, her pikselde hesaplanıyor.
+- Dokular NASA Visible Earth'ten geliyor (Blue Marble, City Lights);
+  bunlar kamu malı.
+- Bu hesapların doğruluğunu birim testlerle kontrol ettim: GMST J2000
+  değeri, gündönümü sapması, güneş altı boylamı ve küre doku hizalaması.
+
+
+7) TEST
+-------
+- 22 birim testi var. Bunlara SGP4 için Vallado'nun resmî test vektörü,
+  çevrimdışı dondurma, API sınırı ve HTTP 403 davranışı dahil.
+- Playwright ile uçtan uca test yazdım. Gerçek Chromium'da açılış, arama,
+  filtre, seçim, takip, çevrimdışı ve mobil yerleşimi deniyor.
+- Neyin nerede test edildiği docs/TEST_RAPORU.md dosyasında dürüstçe
+  yazıyor.
+
+
+8) MİMARİ (tek cümleyle her klasör)
+-----------------------------------
+src/core    → Platformdan bağımsız mantık (ayrıştırma, sınıflandırma,
+              veri servisi, önbellek). Testi en kolay katman.
+src/worker  → SGP4 hesap işçisi.
+src/render  → Three.js sahnesi ve shader'lar.
+src/ui      → Paneller, sanal liste, bilgi kartı, açılış ekranı.
+src-tauri   → Windows kabuğu. Rust tarafı yalnızca iki alan adına HTTPS
+              isteği atabilir (güvenlik).
+scripts     → Doku indirme, ikon üretimi, Android ayarları.
+
+
+9) SIK SORULABİLECEK SORULAR
+----------------------------
+S: Konumlar gerçek mi?
+C: Konumlar, ABD Uzay Kuvvetleri'nin ölçümlerinden üretilen resmî yörünge
+   elemanlarından SGP4 ile hesaplanıyor. Bu, NASA dahil herkesin
+   kullandığı standart yöntem. Doğruluğu eleman tarihinde yaklaşık 1 km
+   ve uygulamada "hesaplanan" olarak etiketli.
+
+S: İnternet yokken ne oluyor?
+C: Son veriler önbellekte kalıyor. Konumlar bağlantının kesildiği anda
+   donuyor ve ekranda kırmızı "Çevrimdışı" yazıyor. Bağlantı gelince
+   otomatik olarak yenileniyor.
+
+S: Neden Electron değil de Tauri?
+C: Electron her uygulamaya bir Chromium gömüyor ve kurulum dosyası
+   100 MB'ı geçiyor. Tauri, Windows'un kendi WebView2 bileşenini
+   kullanıyor; kurulum dosyası birkaç MB.
+
+S: 16 bin uyduyu nasıl kasmadan çiziyorsun?
+C: Tek bir GPU çizim çağrısıyla çiziyorum. Hesap ayrı bir iş parçacığında
+   yapılıyor ve ara karelerde konumu GPU ilerletiyor.
+
+S: Neden TLE değil CSV?
+C: 5 haneli katalog numaraları 2026'da tükendi. Yeni uydular TLE'de
+   yayınlanamıyor. CelesTrak da CSV biçimini öneriyor.

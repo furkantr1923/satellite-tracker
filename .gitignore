@@ -1,0 +1,11 @@
+node_modules/
+dist/
+android/
+src-tauri/target/
+src-tauri/gen/
+e2e/artifacts/
+public/textures/*.jpg
+*.keystore
+.env
+.DS_Store
+Thumbs.db
