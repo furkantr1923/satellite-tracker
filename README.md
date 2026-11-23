@@ -117,7 +117,7 @@ Ayrıntılar: [docs/MIMARI.md](docs/MIMARI.md) · Test sonuçları: [docs/TEST_R
 
 - Kod: MIT © 2026 Furkan
 - Yörünge verisi ve SATCAT: [CelesTrak](https://celestrak.org) (Dr. T.S. Kelso)
-- Dünya görüntüleri: NASA Visible Earth (Blue Marble, Earth's City Lights). NASA görselleri kamu malıdır.
+- Dünya görüntüleri: NASA Visible Earth (Blue Marble, City Lights); NASA sitesine ulaşılamazsa aynı NASA görüntülerinin [three-globe](https://github.com/vasturiano/three-globe) deposundaki kopyaları kullanılır. NASA görselleri kamu malıdır.
 - [Three.js](https://threejs.org) (MIT) · [satellite.js](https://github.com/shashwatak/satellite-js) (MIT) · [Tauri](https://tauri.app) (MIT/Apache-2.0) · [Capacitor](https://capacitorjs.com) (MIT)
 
 > Bu proje NASA ile bağlantılı değildir. "NASA tarzı" ifadesi yalnızca görsel tasarım dilini anlatır. Uygulamada NASA logosu kullanılmaz.

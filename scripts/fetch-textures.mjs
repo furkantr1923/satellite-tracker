@@ -6,9 +6,18 @@ import { existsSync, mkdirSync, statSync, unlinkSync, writeFileSync } from 'node
 
 const DIR = 'public/textures';
 const BASE = 'https://eoimages.gsfc.nasa.gov/images/imagerecords';
+// Yedek: NASA Blue Marble / Black Marble görüntülerinin three-globe (MIT) deposundaki kopyaları
+const MIRROR = 'https://unpkg.com/three-globe/example/img';
+const MIRROR2 = 'https://raw.githubusercontent.com/vasturiano/three-globe/master/example/img';
 const TEXTURES = [
-  { file: 'earth_day.jpg', urls: [`${BASE}/57000/57752/land_shallow_topo_2048.jpg`] },
-  { file: 'earth_night.jpg', urls: [`${BASE}/55000/55167/earth_lights_lrg.jpg`] },
+  {
+    file: 'earth_day.jpg',
+    urls: [`${BASE}/57000/57752/land_shallow_topo_2048.jpg`, `${MIRROR}/earth-blue-marble.jpg`, `${MIRROR2}/earth-blue-marble.jpg`],
+  },
+  {
+    file: 'earth_night.jpg',
+    urls: [`${BASE}/55000/55167/earth_lights_lrg.jpg`, `${MIRROR}/earth-night.jpg`, `${MIRROR2}/earth-night.jpg`],
+  },
   { file: 'earth_clouds.jpg', urls: [`${BASE}/57000/57747/cloud_combined_2048.jpg`] },
 ];
 
