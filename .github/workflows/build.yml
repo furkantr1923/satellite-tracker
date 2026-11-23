@@ -157,3 +157,31 @@ jobs:
         with:
           files: assets/*
           generate_release_notes: true
+
+  builds-branch:
+    name: Derlenmiş dosyaları 'builds' dalına koy
+    if: always() && github.ref == 'refs/heads/main' && needs.windows.result == 'success' && needs.android.result == 'success'
+    needs: [windows, android, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: out
+      - uses: actions/download-artifact@v4
+        with:
+          name: android
+          path: out
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: e2e-ekran-goruntuleri
+          path: out/e2e
+      - name: builds dalına gönder
+        run: |
+          cd out
+          echo "Derleme: ${GITHUB_SHA} · $(date -u +%FT%TZ)" > BUILD.txt
+          git init -q -b builds
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -qm "Derleme ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" builds
