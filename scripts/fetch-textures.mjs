@@ -1,7 +1,8 @@
 // NASA Visible Earth dokularını public/textures/ altına indirir (kamu malı görseller).
 // Derleme sırasında (CI veya yerel) bir kez çalıştırılır; dosyalar varsa atlanır.
 // İndirme başarısız olursa uygulama yordamsal (ızgaralı) küreye düşer — derleme durmaz.
-import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 
 const DIR = 'public/textures';
 const BASE = 'https://eoimages.gsfc.nasa.gov/images/imagerecords';
@@ -33,7 +34,19 @@ for (const t of TEXTURES) {
       done = true;
       break;
     } catch (e) {
-      console.warn(`⚠ ${t.file}: ${url} → ${e.message}`);
+      console.warn(`⚠ ${t.file}: ${url} → ${e.message}${e.cause ? ` (${e.cause.code ?? e.cause.message})` : ''}`);
+      // Yedek: sistemin curl'ü (farklı TLS/HTTP yığını)
+      try {
+        execFileSync('curl', ['-fsSL', '--retry', '2', '-A', 'SatelliteTracker-build/1.0', '-o', out, url], { stdio: 'inherit' });
+        if (statSync(out).size < 50_000) throw new Error('dosya çok küçük');
+        console.log(`✔ ${t.file} curl ile indirildi (${(statSync(out).size / 1024).toFixed(0)} KB)`);
+        ok++;
+        done = true;
+        break;
+      } catch (e2) {
+        if (existsSync(out)) unlinkSync(out);
+        console.warn(`⚠ ${t.file}: curl → ${e2.message.split('\n')[0]}`);
+      }
     }
   }
   if (!done) console.warn(`⚠ ${t.file} indirilemedi; uygulama yordamsal yedek görünümü kullanacak.`);
