@@ -84,7 +84,16 @@ Ekran görüntüleri: `e2e/artifacts/` (desktop.png, desktop-offline.png, mobile
 | `android` | Capacitor → `APK` (secret varsa imzalı release, yoksa debug imzalı) |
 | `release` | `v*` etiketinde tüm dosyalar GitHub Release'e eklenir |
 
-> Bu iş akışı henüz hiç çalıştırılmadı. İlk çalıştırmanın sonucu Actions sekmesinde görülecek. Hata çıkarsa düzeltilip yeniden çalıştırılmalıdır.
+### ✅ CI sonucu (23.11.2026, çalıştırma #45236544854): TÜM İŞLER BAŞARILI
+| İş | Sonuç |
+|---|---|
+| Gerçek tiplerle tip denetimi | ✅ |
+| Birim testleri | ✅ **22/22**: Vallado SGP4 vektörü, OMM → SGP4, 6 haneli NORAD, GEO/HEO (SDP4) dahil |
+| Uçtan uca test (gerçek three.js + WebGL/SwiftShader) | ✅ **15/15 adım**; ekran görüntüleri `builds` dalında |
+| Windows | ✅ Setup.exe (≈3,9 MB, NSIS) + Portable.exe (≈6,5 MB) |
+| Android | ✅ APK (≈5,8 MB, hata ayıklama imzalı) |
+
+İlk çalıştırmada bulunan ve düzeltilen hatalar: `.gitignore` Android ikon klasörünü dışlıyordu; NASA sunucusu (eoimages) GitHub makinelerinden zaman aşımına uğruyordu, bu yüzden aynı NASA görüntülerinin yedek kopyaları eklendi (bulut dokusu için yedek yok, bulut katmanı kapalı). SwiftShader (CPU) üzerinde ölçülen 8 FPS gerçek GPU'yu temsil etmez.
 
 ## 3. 📱 Gerçek cihazda elle doğrulanması gerekenler
 
