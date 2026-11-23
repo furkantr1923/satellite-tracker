@@ -46,7 +46,7 @@ for (const t of TEXTURES) {
       console.warn(`⚠ ${t.file}: ${url} → ${e.message}${e.cause ? ` (${e.cause.code ?? e.cause.message})` : ''}`);
       // Yedek: sistemin curl'ü (farklı TLS/HTTP yığını)
       try {
-        execFileSync('curl', ['-fsSL', '--retry', '2', '-A', 'SatelliteTracker-build/1.0', '-o', out, url], { stdio: 'inherit' });
+        execFileSync('curl', ['-fsSL', '--connect-timeout', '10', '--max-time', '90', '-A', 'SatelliteTracker-build/1.0', '-o', out, url], { stdio: 'inherit' });
         if (statSync(out).size < 50_000) throw new Error('dosya çok küçük');
         console.log(`✔ ${t.file} curl ile indirildi (${(statSync(out).size / 1024).toFixed(0)} KB)`);
         ok++;
